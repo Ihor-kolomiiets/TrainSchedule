@@ -1,10 +1,10 @@
 from enum import Enum
 
 token = '382546574:AAE2kuiu51P01BE9_5YnFlNGlsN2kY3rUTE'
-user = ''
-password = ''
-host = ''
-stations_database = ''
+user = 'root'
+password = 'root'
+host = '127.0.0.1'
+stations_database = 'trainSchedule'
 
 
 #  Класс состояний
