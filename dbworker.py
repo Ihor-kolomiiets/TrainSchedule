@@ -11,3 +11,17 @@ def push_to_db(station_info):
     print('OK: ', station_info[0])
     cursor.close()
     conn.close()
+
+
+def push_to_region(station_info):
+    conn = mysql.connector.connect(user=config.user, password=config.password,
+                                   host=config.host, database=config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO region (id, ua_region_name, ru_region_name, en_region_name) VALUES (%s, %s, %s, %s)",
+                   station_info)
+    conn.commit()
+    print('OK: ', station_info[0])
+    cursor.close()
+    conn.close()
+
+
