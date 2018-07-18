@@ -1,17 +1,21 @@
 from bs4 import BeautifulSoup
 import requests
 import dbworker
-import TrainPars
 
 
 # a = 'Суми'
 # b = dbworker.find_train(a)
 # print(b)
 # r = requests.get(TrainPars.make_station_url(b[0]))
-r = requests.get(TrainPars.make_station_url(2858))
 
 
-def print_data():
+def make_station_url(sid=1, sid2=0, lng=''):  # Function for make url to parse
+    return 'http://swrailway.gov.ua/timetable/eltrain3-5/?sid={}&sid2={}&startPicker2=&dateR=0&lng={}'\
+        .format(sid, sid2, lng)
+
+
+def print_data(station_id=2858):
+    r = requests.get(make_station_url(station_id))
     soup = BeautifulSoup(r.text, 'lxml')
     result = soup.find('table', class_='td_center').find_all('tr', height='20')[2:]
     message = ''
