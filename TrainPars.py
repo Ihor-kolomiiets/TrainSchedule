@@ -1,8 +1,27 @@
 from bs4 import BeautifulSoup
 import requests
+import re
 import dbworker
 import config
 import mysql.connector
+
+
+def main():
+    for id in range(2, 28):
+        r = requests.get('http://swrailway.gov.ua/timetable/eltrain3-5/?geo2_list=%s&lng=' % id)
+        if r.status_code != 200:
+            continue
+        soup = BeautifulSoup(r.text, 'lxml')
+        result = soup.find_all('td', valign='top')[4:]
+        stationsInfo = []
+        for i in result:
+            stationsInfo.append(i.find_all('a'))
+        for i in stationsInfo:
+            for j in i:
+                if j.text == '':
+                    continue
+                test = re.search('\d+', j.get('href'))
+                dbworker.push_to_db((test.group(0), j.text, id))
 
 
 def make_station_url(sid=1, sid2=0, lng=''):  # Function for make url to parse
@@ -12,24 +31,6 @@ def make_station_url(sid=1, sid2=0, lng=''):  # Function for make url to parse
 
 def make_region_url(geo2_list=2, lng=''):  # Function for make url to parse
     return 'http://swrailway.gov.ua/timetable/eltrain3-5/?geo2_list={}&lng={}'.format(geo2_list, lng)
-
-
-def pars_station():
-    for i in range(1, 4521):  # Parse all pages for find station 4521
-        r = requests.get(make_station_url(i))
-        soup = BeautifulSoup(r.text, 'lxml')
-        ua_station = soup.find('td', class_='sh').find('input', id='namelike1').get('value')
-        if ua_station == '':
-            print('Nothing there in', i)
-            dbworker.push_to_db((i, '', '', ''))
-            continue
-        r = requests.get(make_station_url(i, lng='_ru'))
-        soup = BeautifulSoup(r.text, 'lxml')
-        ru_station = soup.find('td', class_='sh').find('input', id='namelike1').get('value')
-        r = requests.get(make_station_url(i, lng='_en'))
-        soup = BeautifulSoup(r.text, 'lxml')
-        en_station = soup.find('td', class_='sh').find('input', id='namelike1').get('value')
-        dbworker.push_to_db((i, ua_station, ru_station, en_station))
 
 
 def pars_region():  # Pars regions names
@@ -51,23 +52,5 @@ def pars_region():  # Pars regions names
         dbworker.push_to_region((i, ua_region, ru_region, en_region))
 
 
-def get_region():  # Bound region and stations
-    conn = mysql.connector.connect(user=config.user, password=config.password,
-                                   host=config.host, database=config.stations_database)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, ru_region_name from region")
-    regions = cursor.fetchall()
-    cursor.execute("SELECT id from stations")
-    stations = cursor.fetchall()
-    for station in stations:
-        r = requests.get(make_station_url(station[0], lng='_ru'))
-        soup = BeautifulSoup(r.text, 'lxml')
-        region = soup.find('tr', class_='onx').find('td').find('a', class_='et').text
-        for region_db in regions:
-            if region_db[1] in region:
-                cursor.execute('UPDATE stations SET region = %s where id = %s' % (region_db[0], station[0]))
-                conn.commit()
-                break
-    cursor.close()
-    conn.close()
-
+if __name__ == '__main__':
+    main()
