@@ -17,13 +17,12 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Оберіть регіон', reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: (True and call.data == 'South'))
 def callback_inline(call):
-    if call.data == 'South':
-        keyboard = types.InlineKeyboardMarkup()
-        keyboard.add(types.InlineKeyboardButton(text='Пошук по станції', callback_data='StationSearch'))
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                              text="Введите номер станции: ", reply_markup=keyboard)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Пошук по станції', callback_data='StationSearch'))
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text="Введите номер станции: ", reply_markup=keyboard)
 
 
 @bot.message_handler(func=lambda message: message.text)  # Need change to block before choose region
