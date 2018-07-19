@@ -27,7 +27,9 @@ def callback_inline(call):
 
 @bot.message_handler(func=lambda message: message.text)  # Need change to block before choose region
 def object_message(message):
-    bot.send_message(message.chat.id, "Result:\n" + GetSchedule.print_data(int(message.text)))
+    for text in GetSchedule.print_data(int(message.text)):
+        print(len(text))
+        bot.send_message(message.chat.id, text)
 
 
 if __name__ == '__main__':
