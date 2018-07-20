@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import dbworker
 
 
 # a = 'Суми'
@@ -32,4 +31,4 @@ def print_data(station_id):
 
 
 if __name__ == '__main__':
-    print(print_data())
+    print_data(265)
