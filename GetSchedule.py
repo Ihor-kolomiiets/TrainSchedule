@@ -37,4 +37,4 @@ def print_data(station_name):
 
 
 if __name__ == '__main__':
-    print_data(265)
+    print_data('Сумы')
