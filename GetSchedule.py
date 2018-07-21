@@ -1,11 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
-
-
-# a = 'Суми'
-# b = dbworker.find_train(a)
-# print(b)
-# r = requests.get(TrainPars.make_station_url(b[0]))
+import sqlite3
+import config
 
 
 def make_station_url(sid=1, sid2=0, lng=''):  # Function for make url to parse
@@ -13,7 +9,17 @@ def make_station_url(sid=1, sid2=0, lng=''):  # Function for make url to parse
         .format(sid, sid2, lng)
 
 
-def print_data(station_id):
+def print_data(station_name):
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute('SELECT station_id FROM stations WHERE name_ru="%s"' % (station_name))
+    station_id = cursor.fetchone()
+    if station_id is None:
+        return 'Нема такої станції, дебіл'
+    else:
+        station_id = station_id[0]
+    cursor.close()
+    conn.close()
     r = requests.get(make_station_url(station_id))
     soup = BeautifulSoup(r.text, 'lxml')
     result = soup.find('table', class_='td_center').find_all('tr', height='20')[2:]
