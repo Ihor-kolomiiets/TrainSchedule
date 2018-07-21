@@ -1,6 +1,6 @@
 import config
 import telebot
-# import dbworker
+import dbworker
 from telebot import types
 import GetSchedule
 
@@ -10,26 +10,40 @@ bot = telebot.TeleBot(config.token)
 @bot.message_handler(commands=['start'])
 def start_message(message):
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text='Півд. Півд-Зах. Дон. зал.', callback_data='South'))
-    keyboard.add(types.InlineKeyboardButton(text='Одеська зал.', callback_data='Odesa'))
-    keyboard.add(types.InlineKeyboardButton(text='Львівська зал.', callback_data='Lviv'))
-    keyboard.add(types.InlineKeyboardButton(text='Дніпропетр. зал.', callback_data='Dnipro'))
-    bot.send_message(message.chat.id, 'Оберіть регіон', reply_markup=keyboard)
+    keyboard.add(types.InlineKeyboardButton(text='Поиск по станции', callback_data='Station_Search'))
+    keyboard.add(types.InlineKeyboardButton(text='Поиск между станциями', callback_data='Schedule_Search'))
+    bot.send_message(message.chat.id, 'Выберите желаемое действие', reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda call: (True and call.data == 'South'))
+@bot.callback_query_handler(func=lambda call: (True and call.data == 'Station_Search'))
+def callback_inline(call):
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text="Введите название станции")
+    dbworker.set_state(call.message.chat.id, config.States.S_STATIONSEARCH.value)
+
+
+@bot.callback_query_handler(func=lambda call: (True and call.data == 'Schedule_Search'))
 def callback_inline(call):
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text='Пошук по станції', callback_data='StationSearch'))
+    keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                          text="Введите номер станции: ", reply_markup=keyboard)
+                          text="Вам сюда нельзя", reply_markup=keyboard)
 
 
-@bot.message_handler(func=lambda message: message.text)  # Need change to block before choose region
-def object_message(message):
-    for text in GetSchedule.print_data(int(message.text)):
-        print(len(text))
-        bot.send_message(message.chat.id, text)
+@bot.callback_query_handler(func=lambda call: (True and call.data == 'Back_to_start'))
+def callback_inline(call):
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Поиск по станции', callback_data='Station_Search'))
+    keyboard.add(types.InlineKeyboardButton(text='Поиск между станциями', callback_data='Schedule_Search'))
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text="Выберите желаемое действие", reply_markup=keyboard)
+
+
+@bot.message_handler(func=lambda message: (message.text and
+                                           dbworker.get_state(message.chat.id) == config.States.S_STATIONSEARCH.value))
+def station_search(message):
+    result = GetSchedule.print_data(message.text)
+    bot.send_message(message.chat.id, result)
 
 
 if __name__ == '__main__':
