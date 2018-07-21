@@ -6,6 +6,7 @@ import GetSchedule
 import json
 from time import sleep
 
+
 def make_region_url(geo2_list=2, lng=''):  # Function for make url to parse
     return 'http://swrailway.gov.ua/timetable/eltrain3-5/?geo2_list={}&lng={}'.format(geo2_list, lng)
 
