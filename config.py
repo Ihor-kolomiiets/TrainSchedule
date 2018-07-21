@@ -1,6 +1,6 @@
 from enum import Enum
 
-token = '382546574:AAE2kuiu51P01BE9_5YnFlNGlsN2kY3rUTE'
+token = '622336168:AAHoSaq5Khu05TZ1oY4DXBI6F61lDhEb03A'
 stations_database = 'trainSchedule.db'
 users_database = 'users.db'
 

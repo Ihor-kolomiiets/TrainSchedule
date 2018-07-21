@@ -3,6 +3,7 @@ import telebot
 import dbworker
 from telebot import types
 import GetSchedule
+from time import sleep
 
 bot = telebot.TeleBot(config.token)
 
@@ -42,9 +43,17 @@ def callback_inline(call):
 @bot.message_handler(func=lambda message: (message.text and
                                            dbworker.get_state(message.chat.id) == config.States.S_STATIONSEARCH.value))
 def station_search(message):
-    result = GetSchedule.print_data(message.text)
-    bot.send_message(message.chat.id, result)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
+    result = GetSchedule.print_data(message.text)  # Цикл for для создания колбек клавиш, для переходя по станциям
+    bot.send_message(message.chat.id, result, reply_markup=keyboard)
+    dbworker.set_state(message.chat.id, config.States.S_START.value)
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    try:
+        bot.polling(none_stop=True)
+    except Exception as e:
+        print('FAIL')
+        print(e)
+        print('--------')

@@ -2,3 +2,5 @@
 __pycache__
 trainSchedule.db
 users.db
+backup
+test.py
