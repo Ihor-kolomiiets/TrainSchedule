@@ -28,3 +28,26 @@ def get_state(user_id):
         return False
     else:
         return result[0]
+
+
+def db_get(station_name):
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute('SELECT station_id FROM stations WHERE name_ru="%s"' % station_name.upper())
+    station_id = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return station_id
+
+
+def fetch_stations(station_name):
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute('SELECT stations.station_id, stations.name_ru, regions.name_ru '
+                   'FROM stations INNER JOIN regions ON regions.id = stations.region_id '
+                   'AND stations.name_ru LIKE ? ORDER BY stations.name_ru', (station_name.upper() + '%',))
+    stations = cursor.fetchmany(4)
+    print(stations)
+    return stations
+
+# fetch_stations(input())
