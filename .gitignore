@@ -1,6 +1,7 @@
 .idea
 __pycache__
+backup
+errors.log
 trainSchedule.db
 users.db
-backup
 test.py
