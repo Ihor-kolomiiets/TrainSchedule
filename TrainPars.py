@@ -1,10 +1,10 @@
-from bs4 import BeautifulSoup
-import requests
+import json
 import sqlite3
+import time
+import requests
+from bs4 import BeautifulSoup
 import config
 import GetSchedule
-import json
-from time import sleep
 
 
 def make_region_url(geo2_list=2, lng=''):  # Function for make url to parse
@@ -31,7 +31,7 @@ def pars_region():  # Pars regions names
         print(en_region)
         cursor.execute("INSERT INTO regions (id, name_ua, name_ru, name_en) VALUES ('%s', '%s', '%s', '%s')"
                        % (str(i), ua_region, ru_region, en_region))
-        conn.commit()
+    conn.commit()
     cursor.close()
     conn.close()
 
@@ -58,7 +58,7 @@ def pars_stations():
             sid += 1
             continue
         for lng in ['', '_ru', '_en']:
-            sleep(1)
+            time.sleep(1)
             json_url = 'http://swrailway.gov.ua/timetable/eltrain3-5/?JSON=station&id=%s&lng=%s' %(sid, lng)
             r = requests.get(json_url)
             j = json.loads(r.text)
@@ -70,8 +70,8 @@ def pars_stations():
         print(stations_tuple)
         cursor.execute('INSERT INTO stations (station_id, name_ua, name_ru, name_en, region_id) '
                        'VALUES ("%s", "%s", "%s", "%s", "%s")' % stations_tuple)
-        conn.commit()
         sid += 1
+    conn.commit()
     cursor.close()
     conn.close()
 
