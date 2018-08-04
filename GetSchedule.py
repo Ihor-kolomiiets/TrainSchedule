@@ -27,5 +27,35 @@ def print_data(station_id):
     return splitted_message
 
 
+def print_data_schedule(station_id, station_id2):
+    r = requests.get(make_station_url(station_id, station_id2))
+    soup = BeautifulSoup(r.text, 'lxml')
+    result = soup.find('table', class_='td_center').find_all('tr', height='20')[2:]
+    if not result:
+        return False
+    message = ''
+    splitted_message = []
+    for schedule_array in result:
+        schedule = schedule_array.find_all('td')
+        print(schedule)
+        print(schedule[0].find('a').text)  # Train number
+        print(schedule[1].text)  # Train frequency
+        print(schedule[2].text)  # Train name
+        print(schedule[3].text)  # Arrival to 1 station
+        print(schedule[4].text)  # Departure from 1 station
+        print(schedule[5].text)  # Arrival to 2 station
+        print(schedule[6].text)  # Departure form 2 station
+        message += 'Поїзд: ' + schedule[0].find('a').text + '\n' + 'Обіг: ' + schedule[1].text + '\n' \
+                   + 'Маршрут: ' + schedule[2].text + '\n' + 'Прибуття на станцію 1: ' + schedule[3].text + '\n' \
+                   + 'Відправлення зі станції 1: ' + schedule[4].text + '\n' \
+                   + 'Прибуття на станцію 2: ' + schedule[5].text + '\n' \
+                   + 'Відправлення зі станції 2: ' + schedule[6].text + '\n\n'
+        if len(message) > 2600:
+            splitted_message.append(message)
+            message = ''
+    splitted_message.append(message)
+    return splitted_message
+
+
 if __name__ == '__main__':
     print_data('Сумы')

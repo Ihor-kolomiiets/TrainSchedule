@@ -50,4 +50,26 @@ def fetch_stations(station_name):
     print(stations)
     return stations
 
+
+def add_first_station(user_id, station_id):
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute('INSERT OR REPLACE INTO station_storage (user_id, station_id) VALUES ("%s", "%s")'
+                   % (str(user_id), str(station_id)))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return True
+
+
+def get_first_station(user_id):
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    cursor.execute('SELECT station_id FROM station_storage WHERE user_id="%s"' % str(user_id))
+    station_id = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return station_id
+
+
 # fetch_stations(input())
