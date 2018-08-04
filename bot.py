@@ -38,8 +38,7 @@ def callback_inline(call):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text='Поиск по станции', callback_data='Station_Search'))
     keyboard.add(types.InlineKeyboardButton(text='Поиск между станциями', callback_data='Schedule_Search'))
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                          text="Выберите желаемое действие", reply_markup=keyboard)
+    bot.send_message(call.message.chat.id, text="Выберите желаемое действие", reply_markup=keyboard)
     dbworker.set_state(call.message.chat.id, config.States.S_START.value)
 
 
