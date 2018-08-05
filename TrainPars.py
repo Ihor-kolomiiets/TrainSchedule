@@ -11,6 +11,20 @@ def make_region_url(geo2_list=2, lng=''):  # Function for make url to parse
     return 'http://swrailway.gov.ua/timetable/eltrain3-5/?geo2_list={}&lng={}'.format(geo2_list, lng)
 
 
+def pars_lvil_stations():
+    conn = sqlite3.connect(config.stations_database)
+    cursor = conn.cursor()
+    for i in range(1, 960):
+        r = requests.get(GetSchedule.lviv_station_url(i))
+        soup = BeautifulSoup(r.text, 'lxml')
+        station_name = soup.find('div', class_='row').find('h4').find('strong').text
+        if station_name:
+            cursor.execute("INSERT INTO lviv_stations (station_id, name_ua) VALUES (?, ?)", (i, station_name.upper()))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 def pars_region():  # Pars regions names
     conn = sqlite3.connect(config.stations_database)
     cursor = conn.cursor()
@@ -77,4 +91,5 @@ def pars_stations():
 
 
 if __name__ == '__main__':
-    pars_stations()
+    pass
+    # pars_lvil_stations()
