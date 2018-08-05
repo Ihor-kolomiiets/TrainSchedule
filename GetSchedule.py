@@ -24,6 +24,7 @@ def print_data(station_id):
             splitted_message.append(message)
             message = ''
     splitted_message.append(message)
+    print(splitted_message)
     return splitted_message
 
 
@@ -48,6 +49,7 @@ def print_data_schedule(station_id, station_id2):
             splitted_message.append(message)
             message = ''
     splitted_message.append(message)
+    print(splitted_message)
     return splitted_message
 
 

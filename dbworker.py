@@ -54,8 +54,8 @@ def fetch_stations(station_name):
 def add_first_station(user_id, station_id):
     conn = sqlite3.connect(config.stations_database)
     cursor = conn.cursor()
-    cursor.execute('INSERT OR REPLACE INTO station_storage (user_id, station_id) VALUES ("%s", "%s")'
-                   % (str(user_id), str(station_id)))
+    cursor.execute('INSERT OR REPLACE INTO station_storage (user_id, station_id) VALUES (?, ?)',
+                   (str(user_id), (str(station_id))))
     conn.commit()
     cursor.close()
     conn.close()

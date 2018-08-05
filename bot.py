@@ -48,7 +48,9 @@ def send_message_with_station(call):
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
     station_id = call.data.split(' ')
     result_message = GetSchedule.print_data(station_id[1])
-    bot.send_message(call.message.chat.id, result_message, reply_markup=keyboard)
+    for i in range(len(result_message) - 1):
+        bot.send_message(call.message.chat.id, result_message[i])
+    bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
     dbworker.set_state(call.message.chat.id, config.States.S_START.value)
 
 
@@ -76,7 +78,9 @@ def next_station_handler(call):
         keyboard.add(types.InlineKeyboardButton(text='Поменять местами',
                                                 callback_data='Change ' + str(station_id[0]) + ' ' + station_id2[1]))
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
-    bot.send_message(call.message.chat.id, result_message, reply_markup=keyboard)
+    for i in range(len(result_message) - 1):
+        bot.send_message(call.message.chat.id, result_message[i])
+    bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
     dbworker.set_state(call.message.chat.id, config.States.S_START.value)
 
 
@@ -89,7 +93,9 @@ def reroute(call):
                                                                                    + station_ids[1]))
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
     result_message = GetSchedule.print_data_schedule(station_ids[2], station_ids[1])
-    bot.send_message(call.message.chat.id, result_message, reply_markup=keyboard)
+    for i in range(len(result_message) - 1):
+        bot.send_message(call.message.chat.id, result_message[i])
+    bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
     dbworker.set_state(call.message.chat.id, config.States.S_START.value)
 
 
