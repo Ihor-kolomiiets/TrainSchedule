@@ -3,5 +3,5 @@ __pycache__
 backup
 errors.log
 trainSchedule.db
-users.db
+info.txt
 test.py

@@ -1,8 +1,7 @@
 from enum import Enum
 
 token = '622336168:AAHoSaq5Khu05TZ1oY4DXBI6F61lDhEb03A'
-stations_database = 'trainSchedule.db'
-users_database = 'users.db'
+database = 'trainSchedule.db'
 
 
 #  Класс состояний
