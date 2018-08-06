@@ -12,7 +12,7 @@ def make_region_url(geo2_list=2, lng=''):  # Function for make url to parse
 
 
 def pars_lvil_stations():
-    conn = sqlite3.connect(config.stations_database)
+    conn = sqlite3.connect(config.database)
     cursor = conn.cursor()
     for i in range(1, 960):
         r = requests.get(GetSchedule.lviv_station_url(i))
@@ -26,7 +26,7 @@ def pars_lvil_stations():
 
 
 def pars_region():  # Pars regions names
-    conn = sqlite3.connect(config.stations_database)
+    conn = sqlite3.connect(config.database)
     cursor = conn.cursor()
     for i in range(2, 28):
         if i == 25:
@@ -43,15 +43,15 @@ def pars_region():  # Pars regions names
         soup = BeautifulSoup(r.text, 'lxml')
         en_region = soup.find('li').find_all('b')[9].text
         print(en_region)
-        cursor.execute("INSERT INTO regions (id, name_ua, name_ru, name_en) VALUES ('%s', '%s', '%s', '%s')"
-                       % (str(i), ua_region, ru_region, en_region))
+        cursor.execute("INSERT INTO regions (id, name_ua, name_ru, name_en) VALUES (?, ?, ?, ?)",
+                       (i, ua_region, ru_region, en_region))
     conn.commit()
     cursor.close()
     conn.close()
 
 
 def pars_stations():
-    conn = sqlite3.connect(config.stations_database)
+    conn = sqlite3.connect(config.database)
     cursor = conn.cursor()
     sid = 1
     while True:
@@ -62,7 +62,7 @@ def pars_stations():
         r.close()
         region = soup.find('td', colspan='5').find('a', class_='et').get('href')
         region_id = region.replace('?geo2_list=', '').replace('&lng=', '')
-        stations_list.append(str(sid))
+        stations_list.append(sid)
         check_for_valid = soup.find('td', colspan='50')
         if region_id == '' and sid > 5000:
             print("End of pars data")
@@ -73,17 +73,16 @@ def pars_stations():
             continue
         for lng in ['', '_ru', '_en']:
             time.sleep(1)
-            json_url = 'http://swrailway.gov.ua/timetable/eltrain3-5/?JSON=station&id=%s&lng=%s' %(sid, lng)
+            json_url = 'http://swrailway.gov.ua/timetable/eltrain3-5/?JSON=station&id=%s&lng=%s' % (sid, lng)
             r = requests.get(json_url)
             j = json.loads(r.text)
             r.close()
-            station_name = j['label']
+            station_name = j['label'].upper()
             stations_list.append(station_name)
         stations_list.append(region_id)
-        stations_tuple = tuple(stations_list)
-        print(stations_tuple)
+        print(stations_list)
         cursor.execute('INSERT INTO stations (station_id, name_ua, name_ru, name_en, region_id) '
-                       'VALUES ("%s", "%s", "%s", "%s", "%s")' % stations_tuple)
+                       'VALUES (?, ?, ?, ?, ?)', tuple(stations_list))
         sid += 1
     conn.commit()
     cursor.close()
