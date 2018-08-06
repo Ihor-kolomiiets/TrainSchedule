@@ -11,11 +11,22 @@ bot = telebot.TeleBot(config.token)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
+    dbworker.set_state(message.chat.id, config.States.S_START.value)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text='Львовская ж/д', callback_data='Set_department 2'))
+    keyboard.add(types.InlineKeyboardButton(text='Все остальные кроме Днепра', callback_data='Set_department 1'))
+    bot.send_message(message.chat.id, 'Для начала выберите свой регион', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: (True and call.data.startswith('Set_department')))
+def change_department(call):
+    department_id = call.data.split(' ')
+    department_id = int(department_id[1])
+    dbworker.set_department_value(call.message.chat.id, department_id)
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text='Поиск по станции', callback_data='Station_Search'))
     keyboard.add(types.InlineKeyboardButton(text='Поиск между станциями', callback_data='Schedule_Search'))
-    bot.send_message(message.chat.id, 'Выберите желаемое действие', reply_markup=keyboard)
-    dbworker.set_state(message.chat.id, config.States.S_START.value)
+    bot.send_message(call.message.chat.id, 'Выберите желаемое действие', reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: (True and (call.data == 'Station_Search'
@@ -47,7 +58,11 @@ def send_message_with_station(call):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
     station_id = call.data.split(' ')
-    result_message = GetSchedule.print_data(station_id[1])
+    department = dbworker.get_department_value(call.message.chat.id)
+    if department == 1:
+        result_message = GetSchedule.print_data(station_id[1])
+    else:
+        result_message = GetSchedule.print_lviv_station(station_id[1])
     for i in range(len(result_message) - 1):
         bot.send_message(call.message.chat.id, result_message[i])
     bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
@@ -71,15 +86,20 @@ def next_station_handler(call):
     keyboard = types.InlineKeyboardMarkup()
     print(station_id)
     print(station_id2)
-    result_message = GetSchedule.print_data_schedule(str(station_id[0]), station_id2[1])
+    department = dbworker.get_department_value(call.message.chat.id)
+    if department == 1:
+        result_message = GetSchedule.print_data_schedule(str(station_id[0]), station_id2[1])
+    else:
+        result_message = GetSchedule.print_lviv_schedule(str(station_id[0]), station_id2[1])
+    print(result_message)
     if result_message is False:
         result_message = 'Между этими станциями нету прямых пригородних поездов'
     else:
         keyboard.add(types.InlineKeyboardButton(text='Поменять местами',
                                                 callback_data='Change ' + str(station_id[0]) + ' ' + station_id2[1]))
+        for i in range(len(result_message) - 1):
+            bot.send_message(call.message.chat.id, result_message[i])
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
-    for i in range(len(result_message) - 1):
-        bot.send_message(call.message.chat.id, result_message[i])
     bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
     dbworker.set_state(call.message.chat.id, config.States.S_START.value)
 
@@ -92,7 +112,11 @@ def reroute(call):
     keyboard.add(types.InlineKeyboardButton(text='Поменять местами', callback_data='Change ' + station_ids[2] + ' '
                                                                                    + station_ids[1]))
     keyboard.add(types.InlineKeyboardButton(text='Назад', callback_data='Back_to_start'))
-    result_message = GetSchedule.print_data_schedule(station_ids[2], station_ids[1])
+    department = dbworker.get_department_value(call.message.chat.id)
+    if department == 1:
+        result_message = GetSchedule.print_data_schedule(station_ids[2], station_ids[1])
+    else:
+        result_message = GetSchedule.print_lviv_schedule(station_ids[2], station_ids[1])
     for i in range(len(result_message) - 1):
         bot.send_message(call.message.chat.id, result_message[i])
     bot.send_message(call.message.chat.id, result_message[-1], reply_markup=keyboard)
@@ -102,7 +126,7 @@ def reroute(call):
 @bot.message_handler(func=lambda message: (message.text and dbworker.get_state(message.chat.id)
                                            == config.States.S_SECONDSTATION.value))
 def schedule_search(message):
-    result = dbworker.fetch_stations(message.text)
+    result = dbworker.fetch_stations(message.text, message.chat.id)
     if not result:
         bot.send_message(message.chat.id, 'К сожалению такую станцию найти не удалось')
         dbworker.set_state(message.chat.id, config.States.S_START.value)
@@ -122,7 +146,7 @@ def schedule_search(message):
                                            or dbworker.get_state(message.chat.id)
                                            == config.States.S_THROUGHSTATIONS.value))
 def station_search(message):
-    result = dbworker.fetch_stations(message.text)
+    result = dbworker.fetch_stations(message.text, message.chat.id)
     if not result:
         bot.send_message(message.chat.id, 'К сожалению такую станцию найти не удалось')
         dbworker.set_state(message.chat.id, config.States.S_START.value)
