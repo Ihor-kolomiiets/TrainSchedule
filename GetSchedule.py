@@ -102,11 +102,12 @@ def print_data_schedule(station_id, station_id2):
     for schedule_array in result:
         schedule = schedule_array.find_all('td')
         message += 'Поїзд: ' + schedule[0].find('a').text + '\n' + 'Обіг: ' + schedule[1].text + '\n' \
-                   + 'Маршрут: ' + schedule[2].text + '\n' + 'Прибуття на ' \
-                   + stations_name[0].find('b').text + ': ' + schedule[3].text + '\n' \
+                   + 'Маршрут: ' + schedule[2].text + '\n' \
                    + 'Відправлення зі ' + stations_name[0].find('b').text + ': ' + schedule[4].text + '\n' \
-                   + 'Прибуття на ' + stations_name[1].find('b').text + ': ' + schedule[5].text + '\n' \
-                   + 'Відправлення зі ' + stations_name[1].find('b').text + ': ' + schedule[6].text + '\n\n'
+                   + 'Прибуття на ' + stations_name[1].find('b').text + ': ' + schedule[5].text + '\n\n'
+        """ Telegram have restriction for message with more than 3000 characters,
+        we need split big message. 2600 was chosen because message should be splited properly,
+        for prevent split information related to one station"""
         if len(message) > 2600:
             splitted_message.append(message)
             message = ''
@@ -116,4 +117,5 @@ def print_data_schedule(station_id, station_id2):
 
 
 if __name__ == '__main__':
-    print_lviv_schedule(509, 874)
+    pass
+    # print_lviv_schedule(509, 874)
